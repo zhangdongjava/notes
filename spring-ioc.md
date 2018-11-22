@@ -1,3 +1,125 @@
+# IOC容器创建bean过程
+
+- 缓存中获取单例实例 获取到直接返回
+
+- 递归调用父容器获取bean方法
+
+- 调用org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBeanInstance进行bean的实例化
+
+- org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyMergedBeanDefinitionPostProcessors 进行所有MergedBeanDefinitionPostProcessor接口实现类的postProcessMergedBeanDefinition方法调用
+
+- org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean  属性注入
+
+- org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#initializeBean(java.lang.String, java.lang.Object, org.springframework.beans.factory.support.RootBeanDefinition)初始化bean  
+
+    - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
+
+      ​	#applyBeanPostProcessorsBeforeInitialization 
+
+      ​	所有BeanPostProcessor接口实现类 postProcessBeforeInitialization方法调用     
+
+    - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
+
+      ​	#invokeInitMethods		
+
+      ​	 实现InitializingBean的方法或者自定义的初始化方法调用
+
+    - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#
+
+      ​	applyBeanPostProcessorsAfterInitialization	 
+
+      ​        所有BeanPostProcessor接口实现类 postProcessAfterInitialization方法调用   
+
+- org.springframework.beans.factory.support.AbstractBeanFactory#registerDisposableBeanIfNecessary 注册销毁bean如果有需要
+
+
+# spring接口用法
+
+## BeanPostProcessor
+
+org.springframework.beans.factory.config.BeanPostProcessor
+
+```java
+public interface BeanPostProcessor {
+
+   /**应用这个BeanPostProcessor到给定的新实例初始化方法(例如 InitializingBean的 			         afterPropertiesSet 方法或者 一个自定义的 init-method)之前调用
+    */
+   @Nullable
+   default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+      return bean;
+   }
+
+   /**应用这个BeanPostProcessor到给定的新实例初始化方法(例如 InitializingBean的 			         afterPropertiesSet 方法或者 一个自定义的 init-method)之后调用
+    */
+   @Nullable
+   default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+      return bean;
+   }
+
+}
+```
+
+## MergedBeanDefinitionPostProcessor
+
+接口全名 org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor
+
+定义如下:
+
+```java
+public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
+
+	//这个方法在spring调用bean构造器之后 初始化之前 
+	void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName);
+
+}
+```
+
+用例:AutowiredAnnotationBeanPostProcessor类实现这个接口用来做依赖注入配置的构建
+
+## InstantiationAwareBeanPostProcessor
+
+org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor
+
+```java
+public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
+
+	@Nullable
+	default Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
+		return null;
+	}
+
+	default boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
+		return true;
+	}
+
+	@Nullable
+	default PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
+			throws BeansException {
+
+		return null;
+	}
+
+	@Deprecated
+	@Nullable
+	default PropertyValues postProcessPropertyValues(
+			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
+
+		return pvs;
+	}
+
+}
+```
+
+用例:
+
+- org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#setCustomTargetSourceCreators
+
+* org.springframework.aop.framework.autoproxy.target.LazyInitTargetSourceCreator
+
+
+
+
+
 # Autowired原理
 
 ## 准备
@@ -5,7 +127,7 @@
 ### 了解方法:
 
 - org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor#postProcessMergedBeanDefinition 
-  //这个方法在spring调用bean构造器之后 初始化之前 代码如下:
+  //这个方法在spring调用bean构造器之后 初始化之前 
 
 - org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor#postProcessProperties
 
