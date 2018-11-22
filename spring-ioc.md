@@ -31,7 +31,7 @@ this.autowiredAnnotationTypes.add(Autowired.class);
 		}
 ```
 
-可以根据以上代码看出添加了3个注解 Autowired.class,Value.class,javax.inject.Inject(如果该类存在)
+可以根据以上代码看出添加了3个注解 Autowired.class,Value.class,javax.inject.Inject(如果该)
 
 我们来看看org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor这个类
 
@@ -41,7 +41,7 @@ this.autowiredAnnotationTypes.add(Autowired.class);
 
 ```java
 @Override
-	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
         //获取依赖注入数据
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
 		//检测配置成员
@@ -158,7 +158,7 @@ org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor的p
 
 ```java
 @Override
-	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
         //从缓存中获取依赖属性配置
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
@@ -201,7 +201,7 @@ public void inject(Object target, @Nullable String beanName, @Nullable PropertyV
 ```java
 //这是一个属性的注入过程
 @Override
-		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			Field field = (Field) this.member;
 			Object value;
             //判断时候缓存 有使用缓存
@@ -257,7 +257,7 @@ public void inject(Object target, @Nullable String beanName, @Nullable PropertyV
 
 ```java
 @Override
-		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			if (checkPropertySkipping(pvs)) {
 				return;
 			}
