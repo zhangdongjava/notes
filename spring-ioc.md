@@ -4,11 +4,21 @@
 
 - 递归调用父容器获取bean方法
 
+- org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(java.lang.String, org.springframework.beans.factory.support.RootBeanDefinition, java.lang.Object[])
+
+     - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation ==如果方法返回的不为null则创建对象完毕==
+       - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation 调用 InstantiationAwareBeanPostProcessor接口实现类的postProcessBeforeInstantiation方法进行直接返回bean实例 如果有一个返回不为空直接结束 
+       - 如果上列操作完毕都返回的不是null 则调用所有的BeanPostProcessor接口实现类的postProcessAfterInitialization方法进行直接返回bean实例 如果有一个返回不为空直接结束 
+
 - 调用org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBeanInstance进行bean的实例化
 
 - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyMergedBeanDefinitionPostProcessors 进行所有MergedBeanDefinitionPostProcessor接口实现类的postProcessMergedBeanDefinition方法调用
 
-- org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean  属性注入
+- org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#populateBean  对bean的属性赋值 ==这个不包括注解的依赖注入==
+
+     - 所有 InstantiationAwareBeanPostProcessor接口实现类的postProcessAfterInstantiation方法调用 返回false终止循环调用
+     - 判断org.springframework.beans.factory.support.AbstractBeanFactory#beanPostProcessors属性集合中是否存在InstantiationAwareBeanPostProcessor实现类存在则 循环调用InstantiationAwareBeanPostProcessor接口实现类的postProcessProperties方法对bean的属性配置进行修改 如果该方法返回null 那么将调用postProcessPropertyValues方法对bean的属性配置进行重新赋值 如果还是null 该populateBean 方法结束运行
+     - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#applyPropertyValues 应用上面一系列操作后的bean的属性配置进行对bean进行配置
 
 - org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#initializeBean(java.lang.String, java.lang.Object, org.springframework.beans.factory.support.RootBeanDefinition)初始化bean  
 
@@ -82,24 +92,25 @@ org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor
 
 ```java
 public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
-
+	
 	@Nullable
 	default Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
 		return null;
 	}
-
+    
 	default boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
 		return true;
 	}
-
+    //在执行org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory
+    //#populateBean方法的之前调用该方法对bean属性赋值的配置进行更改 ，返回更改后的属性配置
 	@Nullable
 	default PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
 			throws BeansException {
 
 		return null;
 	}
-
-	@Deprecated
+	//过时的方法可以当postProcessProperties方法返回null的时候使用该方法和postProcessProperties      方法用法一样
+	@Deprecated 
 	@Nullable
 	default PropertyValues postProcessPropertyValues(
 			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
