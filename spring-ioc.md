@@ -31,7 +31,7 @@ this.autowiredAnnotationTypes.add(Autowired.class);
 		}
 ```
 
-可以根据以上代码看出添加了3个注解 Autowired.class,Value.class,javax.inject.Inject(如果该)
+可以根据以上代码看出添加了3个注解 Autowired.class,Value.class,javax.inject.Inject（如果存在）
 
 我们来看看org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor这个类
 
@@ -40,8 +40,8 @@ this.autowiredAnnotationTypes.add(Autowired.class);
 一下是 对postProcessMergedBeanDefinition 的实现
 
 ```java
-@Override
-public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+	@Override
+	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
         //获取依赖注入数据
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, beanType, null);
 		//检测配置成员
@@ -157,8 +157,8 @@ org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcesso
 org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor的postProcessProperties方法
 
 ```java
-@Override
-public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+	@Override
+	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
         //从缓存中获取依赖属性配置
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
@@ -199,9 +199,9 @@ public void inject(Object target, @Nullable String beanName, @Nullable PropertyV
 #### 属性依赖注入实现
 
 ```java
-//这是一个属性的注入过程
-@Override
-protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+		//这是一个属性的注入过程
+		@Override
+		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			Field field = (Field) this.member;
 			Object value;
             //判断时候缓存 有使用缓存
@@ -256,8 +256,8 @@ protected void inject(Object bean, @Nullable String beanName, @Nullable Property
 #### 方法依赖注入实现
 
 ```java
-@Override
-protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+		@Override
+		protected void inject(Object bean, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
 			if (checkPropertySkipping(pvs)) {
 				return;
 			}
